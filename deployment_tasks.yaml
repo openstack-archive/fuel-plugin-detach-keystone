@@ -18,7 +18,7 @@
   required_for: [deploy_end]
   tasks: [fuel_pkgs, hiera, globals, tools, logging,
     netconfig, hosts, firewall, deploy_start, cluster, keystone-vip,
-    cluster-haproxy, memcached, task-keystone]
+    cluster-haproxy, memcached, openstack-haproxy-stats, task-keystone]
   parameters:
     strategy:
       type: parallel
