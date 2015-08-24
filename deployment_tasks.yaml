@@ -39,7 +39,7 @@
   required_for: [deploy_end]
   requires: [cluster]
   parameters:
-    puppet_manifest: 'vip.pp'
+    puppet_manifest: '/etc/puppet/modules/osnailyfacter/modular/virtual_ips/virtual_ips.pp'
     puppet_modules: '/etc/puppet/modules'
     timeout: 3600
 
@@ -47,7 +47,7 @@
   type: puppet
   role: [primary-standalone-keystone, standalone-keystone]
   required_for: [task-keystone]
-  requires: [deploy_start, keystone-hiera-override, 
+  requires: [deploy_start, keystone-hiera-override,
     netconfig]
   parameters:
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/db.pp
