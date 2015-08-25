@@ -8,4 +8,7 @@ attributes:
     value: |
       foo: bar
     label: "Additional config"
-    description: "Just put here valid yaml" 
+    description: "Just put here valid yaml"
+    regex:
+      source: '.+'
+      error: "This field should not be empty"
