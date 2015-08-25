@@ -14,11 +14,19 @@ if $detach_keystone_plugin {
     fail('Keystone service endpoint public VIP is not defined')
   }
 
+  #TODO (holser): Redesign parseyaml and is_bool once [MODULES-2462] applied
   $settings_hash       = parseyaml($detach_keystone_plugin['yaml_additional_config'])
-  $keystone_vip        = pick($settings_hash['remote_keystone'],
+
+  if is_bool($settings_hash) {
+    $settings_hash_real = {}
+  } else {
+    $settings_hash_real = $settings_hash
+  }
+
+  $keystone_vip        = pick($settings_hash_real['remote_keystone'],
                               $network_metadata['vips']['service_endpoint']['ipaddr'])
 
-  $public_keystone_vip = pick($settings_hash['remote_keystone'],
+  $public_keystone_vip = pick($settings_hash_real['remote_keystone'],
                               $network_metadata['vips']['public_service_endpoint']['ipaddr'])
 
   $nodes_hash          = hiera('nodes')
