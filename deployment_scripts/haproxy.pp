@@ -14,9 +14,14 @@ if ($use_keystone) {
                               keys($keystones_address_map))
   $ipaddresses         = pick(hiera_array('keystone_ipaddresses', undef),
                               values($keystones_address_map))
-  $public_virtual_ip   = pick(hiera('public_service_endpoint', undef), hiera('public_vip'))
   $internal_virtual_ip = pick(hiera('service_endpoint', undef), hiera('management_vip'))
 
+  # Don't deploy on public service endpoint if SSL enabled
+  if $public_ssl_hash['services'] {
+    $public_virtual_ip = $internal_virtual_ip
+  } else {
+    $public_virtual_ip   = pick(hiera('public_service_endpoint', undef), hiera('public_vip'))
+  }
 
   # configure keystone ha proxy
   class { '::openstack::ha::keystone':
@@ -24,7 +29,7 @@ if ($use_keystone) {
     ipaddresses         => $ipaddresses,
     public_virtual_ip   => $public_virtual_ip,
     server_names        => $server_names,
-    public_ssl          => $public_ssl_hash['services'],
+    public_ssl          => false,
   }
 
   Package['socat'] -> Class['openstack::ha::keystone']
