@@ -59,6 +59,18 @@ if $detach_keystone_plugin {
       $memcache_nodes   = $keystone_nodes
       $deploy_vrouter   = 'false'
       $keystone_enabled = 'true'
+
+      #FIXME(mattymo): Allow plugins to depend on each other and update each other
+      $detach_rabbitmq_plugin = hiera('detach-rabbitmq', undef)
+      if $detach_rabbitmq_plugin {
+        $rabbitmq_roles = [ 'standalone-rabbitmq' ]
+        $rabbit_nodes = get_nodes_hash_by_roles($network_metadata, $rabbitmq_roles)
+        $rabbit_address_map = get_node_to_ipaddr_map_by_network_role($rabbit_nodes,'mgmt/messaging')
+        $amqp_port = hiera('amqp_port', '5673')
+        $rabbit_nodes_ips = values($rabbit_address_map)
+        $amqp_hosts = inline_template("<%= @rabbit_nodes_ips.map {|x| x + ':' + @amqp_port}.join ',' %>")
+      }
+
     }
     /controller/: {
       $deploy_vrouter   = 'true'
@@ -122,6 +134,12 @@ memcache_roles:
 <% end -%>
 <% end -%>
 deploy_vrouter: <%= @deploy_vrouter %>
+<% if @amqp_hosts -%>
+<%
+@amqp_hosts.each do |amqp|
+%>  - <%= amqp %>
+<% end -%>
+<% end -%>
 ')
 
   file { '/etc/hiera/override':
