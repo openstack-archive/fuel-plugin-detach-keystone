@@ -6,7 +6,10 @@ attributes:
     type: "textarea"
     weight: 52
     value: |
-      foo: bar
+      #Uncomment and adjust to enable remote keystone
+      #remote_keystone: 10.20.5.22
+      #keystone:
+      #  admin_token: REMOTE_KEYSTONE_TOKEN
     label: "Additional config"
     description: "Just put here valid yaml"
     regex:
