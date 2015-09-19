@@ -1,8 +1,14 @@
 attributes:
   metadata:
-    label: "Keystone settings (NOTE: Requires detach-database plugin!!!)"
-    weight: 90
+    restrictions:
+      - condition: "settings:detach-database.metadata.enabled == false"
+        message: "Detach Database plugin should be installed and enabled."
   yaml_additional_config:
+    description: |
+      NOTE: This plugin requires the Detach Database plugin, located at
+      https://github.com/stackforge/fuel-plugin-detach-database
+      You cannot add any Keystone role nodes without enabling the plugin.
+      This field contains free form YAML to provide extra parameters.
     type: "textarea"
     weight: 52
     value: |
@@ -11,7 +17,7 @@ attributes:
       #keystone:
       #  admin_token: REMOTE_KEYSTONE_TOKEN
     label: "Additional config"
-    description: "Just put here valid yaml"
     regex:
       source: '.+'
       error: "This field should not be empty"
+
