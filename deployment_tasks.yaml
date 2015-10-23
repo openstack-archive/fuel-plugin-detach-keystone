@@ -69,12 +69,22 @@
   test_post:
     cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_post.rb
 
+- id: task-workloads_collector_add
+  type: puppet
+  role: [primary-standalone-keystone, standalone-keystone]
+  requires: [task-keystone]
+  required_for: [post_deployment_end]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/workloads_collector_add.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 1800
+
 - id: disable_standalone_keystone_service_token
   type: puppet
   role: [primary-standalone-keystone, standalone-keystone]
   requires: [task-keystone]
   required_for: [post_deployment_end]
-  parameters: 
+  parameters:
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/astute/service_token_off.pp
     puppet_modules: /etc/puppet/modules
     timeout: 180
@@ -102,6 +112,9 @@
 - id: openstack-haproxy-keystone
   type: skipped
 
+- id: workloads_collector_add
+  type: skipped
+
 - id: disable_keystone_service_token
   type: skipped
 
@@ -116,4 +129,3 @@
     puppet_manifest: 'hiera-override.pp'
     puppet_modules: '/etc/puppet/modules'
     timeout: 120
-
