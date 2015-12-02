@@ -61,7 +61,7 @@
   type: puppet
   role: [primary-standalone-keystone, standalone-keystone]
   requires: [deploy_start, keystone-haproxy, keystone-vip, task-keystone-db,
-    memcached]
+    memcached, apache]
   required_for: [openstack-controller]
   parameters:
     puppet_manifest: '/etc/puppet/modules/osnailyfacter/modular/keystone/keystone.pp'
