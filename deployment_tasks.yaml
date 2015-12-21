@@ -4,7 +4,7 @@
   requires: [deploy_start, primary-standalone-database]
   required_for: [primary-controller, cinder-keystone, nova-keystone, deploy_end]
   tasks: [fuel_pkgs, hiera, globals, tools, logging,
-    netconfig, hosts, firewall, ssl-keys-saving, ssl-add-trust-chain,
+    netconfig, hosts, keystone-firewall, ssl-keys-saving, ssl-add-trust-chain,
     deploy_start, cluster, keystone-vip, cluster-haproxy,
     openstack-haproxy-stats, task-keystone-db, memcached, apache,
     task-keystone]
@@ -18,7 +18,7 @@
   requires: [deploy_start, primary-standalone-keystone]
   required_for: [primary-controller, cinder-keystone, nova-keystone, deploy_end]
   tasks: [fuel_pkgs, hiera, globals, tools, logging,
-    netconfig, hosts, firewall, ssl-keys-saving, ssl-add-trust-chain,
+    netconfig, hosts, keystone-firewall, ssl-keys-saving, ssl-add-trust-chain,
     deploy_start, cluster, keystone-vip, cluster-haproxy,
     openstack-haproxy-stats, task-keystone-db, memcached, apache,
     task-keystone]
@@ -60,8 +60,8 @@
 - id: task-keystone
   type: puppet
   role: [primary-standalone-keystone, standalone-keystone]
-  requires: [deploy_start, keystone-haproxy, keystone-vip, task-keystone-db,
-    memcached, apache]
+  requires: [deploy_start, keystone-firewall, keystone-haproxy, keystone-vip,
+    task-keystone-db, memcached, apache]
   required_for: [openstack-controller]
   parameters:
     puppet_manifest: '/etc/puppet/modules/osnailyfacter/modular/keystone/keystone.pp'
@@ -81,6 +81,17 @@
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/workloads_collector_add.pp
     puppet_modules: /etc/puppet/modules
     timeout: 1800
+
+- id: keystone-firewall
+  type: puppet
+  role: [primary-standalone-keystone, standalone-keystone]
+  requires: [keystone-hiera-override]
+  required_for: [cluster]
+  parameters:
+    puppet_manifest: 'keystone_firewall.pp'
+    puppet_modules: /etc/puppet/modules
+    timeout: 180
+    cwd: /
 
 - id: disable_standalone_keystone_service_token
   type: puppet
