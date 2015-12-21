@@ -157,14 +157,14 @@ amqp_hosts: <%=  @amqp_hosts %>
   # different yaml formats via these exec hacks.  It should be noted that the
   # fuel hiera task will wipe out these this update to the hiera.yaml
   exec { "${plugin_name}_hiera_override_7.0":
-    command => "sed '/  - override\/plugins/a\  - override\/${plugin_name}' /etc/hiera.yaml",
+    command => "sed -i '/  - override\\/plugins/a\\  - override\\/${plugin_name}' /etc/hiera.yaml",
     path    => '/bin:/usr/bin',
     unless  => "grep -q '^  - override/${plugin_name}' /etc/hiera.yaml",
     onlyif  => 'grep -q "^  - override/plugins" /etc/hiera.yaml'
   }
 
   exec { "${plugin_name}_hiera_override_8.0":
-    command => "sed '/    - override\/plugins/a\    - override\/${plugin_name}' /etc/hiera.yaml",
+    command => "sed -i '/    - override\\/plugins/a\\    - override\\/${plugin_name}' /etc/hiera.yaml",
     path    => '/bin:/usr/bin',
     unless  => "grep -q '^    - override/${plugin_name}' /etc/hiera.yaml",
     onlyif  => 'grep -q "^    - override/plugins" /etc/hiera.yaml'
