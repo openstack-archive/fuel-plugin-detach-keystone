@@ -1,4 +1,4 @@
-notice('MODULAR: detach-keystone/controller-keystone.pp')
+notice('MODULAR: detach-keystone/keystone-controller.pp')
 
 $network_metadata = hiera('network_metadata')
 $access_hash      = hiera_hash('access',{})
@@ -32,24 +32,23 @@ class { 'openstack::auth_file':
   murano_repo_url => $murano_repo_url,
 }
 
-# Enable keystone on public VIP only if SSL for services is enabled
-if ($public_ssl_hash['services']) {
-  $server_names        = pick(hiera_array('keystone_names', undef),
-                              keys($keystones_address_map))
-  $ipaddresses         = pick(hiera_array('keystone_ipaddresses', undef),
-                              values($keystones_address_map))
-  $public_virtual_ip   = hiera('public_vip')
-  $internal_virtual_ip = hiera('management_vip')
-  # configure keystone ha proxy
-  class { '::openstack::ha::keystone':
-    internal_virtual_ip => $internal_virtual_ip,
-    ipaddresses         => $ipaddresses,
-    public_virtual_ip   => $public_virtual_ip,
-    server_names        => $server_names,
-    public_ssl          => $public_ssl_hash['services'],
-  }
-  Package['socat'] -> Class['openstack::ha::keystone']
-  package { 'socat':
-    ensure => 'present',
-  }
+# Enable keystone HAProxy on controller so public VIP can be used
+$server_names        = pick(hiera_array('keystone_names', undef),
+                            keys($keystones_address_map))
+$ipaddresses         = pick(hiera_array('keystone_ipaddresses', undef),
+                            values($keystones_address_map))
+$public_virtual_ip   = hiera('public_vip')
+$internal_virtual_ip = hiera('management_vip')
+# configure keystone ha proxy
+class { '::openstack::ha::keystone':
+  internal_virtual_ip => $internal_virtual_ip,
+  ipaddresses         => $ipaddresses,
+  public_virtual_ip   => $public_virtual_ip,
+  server_names        => $server_names,
+  public_ssl          => $public_ssl_hash['services'],
+}
+Package['socat'] -> Class['openstack::ha::keystone']
+package { 'socat':
+  ensure => 'present',
+}
 }
