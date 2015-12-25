@@ -47,8 +47,9 @@ class { '::openstack::ha::keystone':
   server_names        => $server_names,
   public_ssl          => $public_ssl_hash['services'],
 }
+
 Package['socat'] -> Class['openstack::ha::keystone']
+
 package { 'socat':
   ensure => 'present',
-}
 }
