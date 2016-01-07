@@ -13,6 +13,8 @@ $region           = hiera('region', 'RegionOne')
 $keystone_hash    = hiera_hash('keystone', {})
 # enabled by default
 $public_ssl_hash = hiera('public_ssl')
+$public_ssl_path = get_ssl_property({}, $public_ssl_hash, 'services', 'public', 'path', [''])
+
 #todo(sv): change to 'keystone' as soon as keystone as node-role was ready
 $keystones_address_map = get_node_to_ipaddr_map_by_network_role(get_nodes_hash_by_roles($network_metadata, ['primary-standalone-keystone', 'standalone-keystone']), 'keystone/api')
 
@@ -46,6 +48,7 @@ class { '::openstack::ha::keystone':
   public_virtual_ip   => $public_virtual_ip,
   server_names        => $server_names,
   public_ssl          => $public_ssl_hash['services'],
+  public_ssl_path     => $public_ssl_path,
 }
 
 Package['socat'] -> Class['openstack::ha::keystone']
