@@ -1,0 +1,11 @@
+Code-Review+2: Alex Schultz <aschultz@mirantis.com>
+Code-Review+1: Stanislaw Bogatkin <sbogatkin@mirantis.com>
+Code-Review+1: Maciej Relewicz <mrelewicz@mirantis.com>
+Code-Review+2: Bartłomiej Piotrowski <bpiotrowski@mirantis.com>
+Workflow+1: Bartłomiej Piotrowski <bpiotrowski@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 11 Jan 2016 09:11:33 +0000
+Reviewed-on: https://review.openstack.org/264728
+Project: openstack/fuel-plugin-detach-keystone
+Branch: refs/heads/master
