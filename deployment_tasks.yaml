@@ -3,7 +3,7 @@
   role: [primary-standalone-keystone]
   requires: [deploy_start, primary-standalone-database]
   required_for: [primary-controller, cinder-keystone, nova-keystone, deploy_end]
-  tasks: [hiera, setup_repositories, fuel_pkgs, globals, tools, logging,
+  tasks: [hiera, fuel_pkgs, globals, tools, logging,
     netconfig, hosts, firewall, keystone-firewall, ssl-keys-saving,
     ssl-add-trust-chain, deploy_start, cluster, keystone-vip, cluster-haproxy,
     openstack-haproxy-stats, task-keystone-db, memcached, apache,
@@ -17,7 +17,7 @@
   role: [standalone-keystone]
   requires: [deploy_start, primary-standalone-keystone]
   required_for: [primary-controller, cinder-keystone, nova-keystone, deploy_end]
-  tasks: [hiera, setup_repositories, fuel_pkgs, globals, tools, logging,
+  tasks: [hiera, fuel_pkgs, globals, tools, logging,
     netconfig, hosts, firewall, keystone-firewall, ssl-keys-saving,
     ssl-add-trust-chain, deploy_start, cluster, keystone-vip, cluster-haproxy,
     openstack-haproxy-stats, task-keystone-db, memcached, apache,
