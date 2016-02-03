@@ -1,9 +1,9 @@
 notice('MODULAR: detach-keystone/hiera-override.pp')
 
 $detach_keystone_plugin = hiera('detach-keystone', undef)
-$hiera_dir              = '/etc/hiera/override'
-$plugin_yaml            = "detach-keystone.yaml"
-$plugin_name            = "detach-keystone"
+$hiera_dir              = '/etc/hiera/plugins'
+$plugin_name            = 'detach-keystone'
+$plugin_yaml            = "${plugin_name}.yaml"
 
 if $detach_keystone_plugin {
   $network_metadata = hiera_hash('network_metadata')
@@ -151,23 +151,6 @@ amqp_hosts: <%=  @amqp_hosts %>
 
   package { 'ruby-deep-merge':
     ensure  => 'installed',
-  }
-
-  # hiera file changes between 7.0 and 8.0 so we need to handle the override the
-  # different yaml formats via these exec hacks.  It should be noted that the
-  # fuel hiera task will wipe out these this update to the hiera.yaml
-  exec { "${plugin_name}_hiera_override_7.0":
-    command => "sed -i '/  - override\\/plugins/a\\  - override\\/${plugin_name}' /etc/hiera.yaml",
-    path    => '/bin:/usr/bin',
-    unless  => "grep -q '^  - override/${plugin_name}' /etc/hiera.yaml",
-    onlyif  => 'grep -q "^  - override/plugins" /etc/hiera.yaml'
-  }
-
-  exec { "${plugin_name}_hiera_override_8.0":
-    command => "sed -i '/    - override\\/plugins/a\\    - override\\/${plugin_name}' /etc/hiera.yaml",
-    path    => '/bin:/usr/bin',
-    unless  => "grep -q '^    - override/${plugin_name}' /etc/hiera.yaml",
-    onlyif  => 'grep -q "^    - override/plugins" /etc/hiera.yaml'
   }
 
   #FIXME(mattymo): https://bugs.launchpad.net/fuel/+bug/1479317
