@@ -46,19 +46,19 @@ if $detach_keystone_plugin {
     'standalone-keystone']
   $keystone_nodes       = get_nodes_hash_by_roles($network_metadata,
     $keystone_roles)
-  $keystone_address_map = get_node_to_ipaddr_map_by_network_role($keystone_nodes,
-    'keystone/api')
-  $keystone_nodes_ips   = values($keystone_address_map)
+  $keystone_address_map = get_node_to_ipaddr_map_by_network_role($keystone_nodes, 'keystone/api')
+  $keystone_nodes_ips   = ipsort(values($keystone_address_map))
   $keystone_nodes_names = keys($keystone_address_map)
 
   case hiera('role', 'none') {
     /keystone/: {
-      $corosync_roles   = $keystone_roles
-      $corosync_nodes   = $keystone_nodes
-      $memcache_roles   = $keystone_roles
-      $memcache_nodes   = $keystone_nodes
-      $deploy_vrouter   = 'false'
-      $keystone_enabled = 'true'
+      $corosync_roles      = $keystone_roles
+      $corosync_nodes      = $keystone_nodes
+      $memcache_roles      = $keystone_roles
+      $memcache_nodes      = $keystone_nodes
+      $memcached_addresses = $keystone_nodes_ips
+      $deploy_vrouter      = 'false'
+      $keystone_enabled    = 'true'
 
       #FIXME(mattymo): Allow plugins to depend on each other and update each other
       $detach_rabbitmq_plugin = hiera('detach-rabbitmq', undef)
@@ -131,6 +131,13 @@ memcache_roles:
 <%
 @memcache_roles.each do |mrole|
 %>  - <%= mrole %>
+<% end -%>
+<% end -%>
+<% if @memcached_addresses -%>
+memcached_addresses:
+<%
+@memcached_addresses.each do |maddr|
+%>  - <%= maddr %>
 <% end -%>
 <% end -%>
 deploy_vrouter: <%= @deploy_vrouter %>
