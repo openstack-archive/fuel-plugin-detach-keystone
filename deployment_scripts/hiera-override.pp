@@ -56,7 +56,7 @@ if $detach_keystone_plugin {
       $corosync_nodes      = $keystone_nodes
       $memcache_roles      = $keystone_roles
       $memcache_nodes      = $keystone_nodes
-      $memcached_addresses = ipsort(keys(get_node_to_ipaddr_map_by_network_role($keystone_nodes, 'mgmt/memcache')
+      $memcached_addresses = ipsort(keys(get_node_to_ipaddr_map_by_network_role($keystone_nodes,'mgmt/memcache')))
       $deploy_vrouter      = 'false'
       $keystone_enabled    = 'true'
 
