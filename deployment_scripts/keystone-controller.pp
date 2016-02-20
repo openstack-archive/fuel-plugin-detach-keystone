@@ -42,20 +42,12 @@ $internal_url = "${internal_protocol}://${internal_address}:${internal_port}"
 $auth_suffix  = pick($keystone_hash['auth_suffix'], '/v2.0')
 $auth_url     = "${internal_url}${auth_suffix}"
 
-$murano_settings_hash = hiera('murano_settings', {})
-if has_key($murano_settings_hash, 'murano_repo_url') {
-  $murano_repo_url = $murano_settings_hash['murano_repo_url']
-} else {
-  $murano_repo_url = 'http://storage.apps.openstack.org'
-}
-
 class { 'openstack::auth_file':
   admin_user      => $admin_user,
   admin_password  => $admin_password,
   admin_tenant    => $admin_tenant,
   region_name     => $region,
   auth_url        => $auth_url,
-  murano_repo_url => $murano_repo_url,
 }
 
 # Enable keystone HAProxy on controller so public VIP can be used
