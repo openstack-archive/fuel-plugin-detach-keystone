@@ -116,6 +116,9 @@
     timeout: 600
 
 #Disable keystone base tasks on controllers
+- id: primary-keystone
+  type: skipped
+
 - id: keystone
   type: skipped
 
