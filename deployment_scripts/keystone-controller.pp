@@ -20,19 +20,16 @@ $ssl_hash = hiera_hash('use_ssl', {})
 $public_ssl = get_ssl_property($ssl_hash, $public_ssl_hash, 'keystone', 'public', 'usage', false)
 $public_ssl_path = get_ssl_property($ssl_hash, $public_ssl_hash, 'keystone', 'public', 'path', [''])
 
-#todo(sv): change to 'keystone' as soon as keystone as node-role was ready
-$keystones_address_map = get_node_to_ipaddr_map_by_network_role(get_nodes_hash_by_roles($network_metadata, ['primary-standalone-keystone', 'standalone-keystone']), 'keystone/api')
-
 $public_protocol = get_ssl_property($ssl_hash, $public_ssl_hash, 'keystone', 'public', 'protocol', 'http')
 $public_address  = get_ssl_property($ssl_hash, $public_ssl_hash, 'keystone', 'public', 'hostname', [$public_vip])
 $public_port     = '5000'
 
 $internal_protocol = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'protocol', 'http')
-$internal_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'hostname', [$service_endpoint, $management_vip])
+$internal_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'hostname', [$management_vip])
 $internal_port     = '5000'
 
 $admin_protocol = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'protocol', 'http')
-$admin_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'hostname', [$service_endpoint, $management_vip])
+$admin_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'hostname', [$management_vip])
 $admin_port     = '35357'
 
 $public_url   = "${public_protocol}://${public_address}:${public_port}"
@@ -59,10 +56,9 @@ class { 'openstack::auth_file':
 }
 
 # Enable keystone HAProxy on controller so public VIP can be used
-$server_names        = pick(hiera_array('keystone_names', undef),
-                            keys($keystones_address_map))
-$ipaddresses         = pick(hiera_array('keystone_ipaddresses', undef),
-                            values($keystones_address_map))
+$server_names        = [$service_endpoint]
+$ipaddresses         = [$service_endpoint]
+
 # configure keystone ha proxy
 class { '::openstack::ha::keystone':
   internal_virtual_ip => $management_vip,
