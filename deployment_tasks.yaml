@@ -29,6 +29,7 @@
 - id: keystone-haproxy
   type: puppet
   groups: [primary-standalone-keystone, standalone-keystone, openstack-haproxy-stats]
+  version: 2.0.0
   required_for: [task-keystone, deploy_end]
   requires: [deploy_start, keystone-vip, cluster-haproxy]
   parameters:
@@ -38,6 +39,7 @@
 
 - id: keystone-vip
   type: puppet
+  version: 2.0.0
   groups: [primary-standalone-keystone, standalone-keystone]
   required_for: [deploy_end]
   requires: [cluster]
@@ -48,10 +50,13 @@
 
 - id: task-keystone-db
   type: puppet
-  role: [primary-standalone-keystone, standalone-keystone]
+  version: 2.0.0
+  groups: [primary-standalone-keystone, standalone-keystone]
   required_for: [task-keystone]
-  requires: [deploy_start, keystone-hiera-override,
-    netconfig]
+  requires: [primary-database, database]
+  cross-depends:
+    - name: /(primary-)?database/
+      role: self
   parameters:
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/db.pp
     puppet_modules: /etc/puppet/modules
@@ -59,9 +64,13 @@
 
 - id: task-keystone
   type: puppet
-  role: [primary-standalone-keystone, standalone-keystone]
+  version: 2.0.0
+  groups: [primary-standalone-keystone, standalone-keystone]
   requires: [deploy_start, firewall, keystone-firewall, keystone-haproxy,
     keystone-vip, task-keystone-db, memcached, apache]
+  cross-depends:
+    - name: keystone-db
+    - name: primary-keystone
   required_for: [openstack-controller]
   parameters:
     puppet_manifest: '/etc/puppet/modules/osnailyfacter/modular/keystone/keystone.pp'
@@ -74,7 +83,8 @@
 
 - id: task-workloads_collector_add
   type: puppet
-  role: [primary-standalone-keystone, standalone-keystone]
+  version: 2.0.0
+  groups: [primary-standalone-keystone, standalone-keystone]
   requires: [task-keystone]
   required_for: [post_deployment_end]
   parameters:
@@ -84,7 +94,8 @@
 
 - id: keystone-firewall
   type: puppet
-  role: [primary-standalone-keystone, standalone-keystone]
+  version: 2.0.0
+  groups: [primary-standalone-keystone, standalone-keystone]
   requires: [keystone-hiera-override, firewall]
   required_for: [cluster]
   parameters:
@@ -94,7 +105,8 @@
 
 - id: disable_standalone_keystone_service_token
   type: puppet
-  role: [primary-standalone-keystone, standalone-keystone]
+  version: 2.0.0
+  groups: [primary-standalone-keystone, standalone-keystone]
   requires: [task-keystone]
   required_for: [post_deployment_end]
   parameters:
@@ -105,6 +117,7 @@
 
 - id: keystone-controller
   type: puppet
+  version: 2.0.0
   groups: [primary-controller, controller]
   requires: [deploy_start, keystone]
   required_for: [cinder-keystone, sahara-keystone, swift-keystone, neutron-keystone,
@@ -117,21 +130,27 @@
 
 #Disable keystone base tasks on controllers
 - id: keystone
+  version: 2.0.0
   type: skipped
 
 - id: keystone-db
+  version: 2.0.0
   type: skipped
 
 - id: openstack-haproxy-keystone
+  version: 2.0.0
   type: skipped
 
 - id: workloads_collector_add
+  version: 2.0.0
   type: skipped
 
 - id: disable_keystone_service_token
+  version: 2.0.0
   type: skipped
 
 - id: keystone-hiera-override
+  version: 2.0.0
   type: puppet
   groups: [primary-controller, controller, primary-standalone-keystone,
     standalone-keystone, cinder, cinder-vmware, compute, ceph-osd,
