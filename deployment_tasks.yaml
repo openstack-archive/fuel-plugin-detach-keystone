@@ -108,8 +108,7 @@
   groups: [primary-controller, controller]
   requires: [deploy_start, keystone]
   required_for: [cinder-keystone, sahara-keystone, swift-keystone, neutron-keystone,
-    glance-keystone, heat-keystone, ceilometer-keystone, murano-keystone,
-    nova-keystone]
+    glance-keystone, heat-keystone, ceilometer-keystone, nova-keystone]
   parameters:
     puppet_manifest: 'keystone-controller.pp'
     puppet_modules: '/etc/puppet/modules'
