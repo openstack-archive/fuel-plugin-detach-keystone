@@ -36,7 +36,7 @@ $public_url   = "${public_protocol}://${public_address}:${public_port}"
 $admin_url    = "${admin_protocol}://${admin_address}:${admin_port}"
 $internal_url = "${internal_protocol}://${internal_address}:${internal_port}"
 
-$auth_suffix  = pick($keystone_hash['auth_suffix'], '/v2.0')
+$auth_suffix  = pick($keystone_hash['auth_suffix'], '/')
 $auth_url     = "${internal_url}${auth_suffix}"
 
 class { 'openstack::auth_file':
