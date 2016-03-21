@@ -1,0 +1,10 @@
+Code-Review+1: Dmitry Bilunov <dbilunov@mirantis.com>
+Code-Review+1: Maksim Malchuk <mmalchuk@mirantis.com>
+Code-Review+2: Alex Schultz <aschultz@mirantis.com>
+Workflow+1: Alex Schultz <aschultz@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 21 Mar 2016 15:09:27 +0000
+Reviewed-on: https://review.openstack.org/295170
+Project: openstack/fuel-plugin-detach-keystone
+Branch: refs/heads/master
