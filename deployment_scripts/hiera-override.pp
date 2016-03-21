@@ -54,7 +54,7 @@ if $detach_keystone_plugin {
     /keystone/: {
       $corosync_roles      = $keystone_roles
       $corosync_nodes      = $keystone_nodes
-      $haproxy_colocate    = 'false'
+      $colocate_haproxy    = 'false'
       $memcache_roles      = $keystone_roles
       $memcache_nodes      = $keystone_nodes
       $memcached_addresses = ipsort(values(get_node_to_ipaddr_map_by_network_role($keystone_nodes,'mgmt/memcache')))
@@ -122,8 +122,8 @@ corosync_roles:
 %>  - <%= crole %>
 <% end -%>
 <% end -%>
-<% if @haproxy_colocate -%>
-haproxy_colocate: <%= @haproxy_colocate %>
+<% if @colocate_haproxy -%>
+colocate_haproxy: <%= @colocate_haproxy %>
 <% end -%>
 <% if @memcache_nodes -%>
 <% require "yaml" -%>
