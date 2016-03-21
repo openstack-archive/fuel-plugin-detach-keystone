@@ -39,7 +39,7 @@ $internal_url = "${internal_protocol}://${internal_address}:${internal_port}"
 $auth_suffix  = pick($keystone_hash['auth_suffix'], '/')
 $auth_url     = "${internal_url}${auth_suffix}"
 
-class { 'openstack::auth_file':
+class { '::osnailyfacter::auth_file':
   admin_user      => $admin_user,
   admin_password  => $admin_password,
   admin_tenant    => $admin_tenant,
