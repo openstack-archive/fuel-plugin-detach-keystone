@@ -11,6 +11,3 @@ standalone-keystone:
     min: 1
   update_required:
     - standalone-keystone
-  restrictions:
-    - condition: "settings:detach-database.metadata.enabled == false"
-      message: "Detach Database plugin should be installed and enabled."
