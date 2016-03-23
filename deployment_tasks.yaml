@@ -1,13 +1,14 @@
+# Custom roles definition
 - id: primary-standalone-keystone
   type: group
   role: [primary-standalone-keystone]
-  requires: [deploy_start, primary-standalone-database]
-  required_for: [primary-controller, cinder-keystone, nova-keystone, deploy_end]
+  requires: [deploy_start, primary-database, primary-rabbitmq]
+  required_for: [cinder-keystone, nova-keystone, deploy_end]
   tasks: [hiera, fuel_pkgs, globals, tools, logging,
     netconfig, hosts, firewall, keystone-firewall, ssl-keys-saving,
-    ssl-add-trust-chain, deploy_start, cluster, keystone-vip, cluster-haproxy,
-    openstack-haproxy-stats, task-keystone-db, memcached, apache,
-    task-keystone]
+    ssl-add-trust-chain, deploy_start, cluster, keystone-vip,
+    primary-cluster-haproxy, openstack-haproxy-stats,
+    memcached, apache, primary-keystone]
   parameters:
     strategy:
       type: one_by_one
@@ -16,21 +17,32 @@
   type: group
   role: [standalone-keystone]
   requires: [deploy_start, primary-standalone-keystone]
-  required_for: [primary-controller, cinder-keystone, nova-keystone, deploy_end]
+  required_for: [cinder-keystone, nova-keystone, deploy_end]
   tasks: [hiera, fuel_pkgs, globals, tools, logging,
     netconfig, hosts, firewall, keystone-firewall, ssl-keys-saving,
     ssl-add-trust-chain, deploy_start, cluster, keystone-vip, cluster-haproxy,
-    openstack-haproxy-stats, task-keystone-db, memcached, apache,
-    task-keystone]
+    openstack-haproxy-stats, memcached, apache, keystone]
   parameters:
     strategy:
       type: parallel
 
+# Custom tasks needed for plugin
+- id: keystone-hiera-override
+  version: 2.0.0
+  type: puppet
+  role: '*'
+  requires: [globals]
+  required_for: [logging, keystone-controller]
+  parameters:
+    puppet_manifest: 'hiera-override.pp'
+    puppet_modules: '/etc/puppet/modules'
+    timeout: 120
+
 - id: keystone-haproxy
   type: puppet
-  groups: [primary-standalone-keystone, standalone-keystone, openstack-haproxy-stats]
+  groups: [primary-standalone-keystone, standalone-keystone]
   version: 2.0.0
-  required_for: [task-keystone, deploy_end]
+  required_for: [keystone, deploy_end]
   requires: [deploy_start, keystone-vip, cluster-haproxy]
   parameters:
     puppet_manifest: 'haproxy.pp'
@@ -48,50 +60,6 @@
     puppet_modules: '/etc/puppet/modules'
     timeout: 3600
 
-- id: task-keystone-db
-  type: puppet
-  version: 2.0.0
-  groups: [primary-standalone-keystone, standalone-keystone]
-  required_for: [task-keystone]
-  requires: [primary-database, database]
-  cross-depends:
-    - name: /(primary-)?database/
-      role: self
-  parameters:
-    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/db.pp
-    puppet_modules: /etc/puppet/modules
-    timeout: 1800
-
-- id: task-keystone
-  type: puppet
-  version: 2.0.0
-  groups: [primary-standalone-keystone, standalone-keystone]
-  requires: [deploy_start, firewall, keystone-firewall, keystone-haproxy,
-    keystone-vip, task-keystone-db, memcached, apache]
-  cross-depends:
-    - name: keystone-db
-    - name: primary-keystone
-  required_for: [openstack-controller]
-  parameters:
-    puppet_manifest: '/etc/puppet/modules/osnailyfacter/modular/keystone/keystone.pp'
-    puppet_modules: '/etc/puppet/modules'
-    timeout: 3600
-  test_pre:
-    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_pre.rb
-  test_post:
-    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_post.rb
-
-- id: task-workloads_collector_add
-  type: puppet
-  version: 2.0.0
-  groups: [primary-standalone-keystone, standalone-keystone]
-  requires: [task-keystone]
-  required_for: [post_deployment_end]
-  parameters:
-    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/workloads_collector_add.pp
-    puppet_modules: /etc/puppet/modules
-    timeout: 1800
-
 - id: keystone-firewall
   type: puppet
   version: 2.0.0
@@ -103,11 +71,89 @@
     puppet_modules: /etc/puppet/modules
     timeout: 180
 
-- id: disable_standalone_keystone_service_token
+# Override existing Fuel tasks to run on standalone-keystone role
+- id: openrc-delete
   type: puppet
   version: 2.0.0
   groups: [primary-standalone-keystone, standalone-keystone]
-  requires: [task-keystone]
+  requires: [deploy_start, openstack-haproxy]
+  required_for: [primary-keystone, keystone]
+  refresh_on: [keystone_config]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/openrc_delete.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 90
+
+- id: primary-keystone
+  type: puppet
+  version: 2.0.0
+  groups: [primary-standalone-keystone]
+  required_for: [primary-openstack-controller, openstack-controller]
+  requires: [openstack-haproxy, database, primary-rabbitmq, rabbitmq, primary-database]
+  refresh_on: [keystone_config]
+  cross-depends:
+    - name: /(primary-)?rabbitmq/
+    - name: keystone-db
+    - name: memcached
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/keystone.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 3600
+  test_pre:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_pre.rb
+  test_post:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_post.rb
+
+- id: keystone
+  type: puppet
+  groups: [standalone-keystone]
+  version: 2.0.0
+  required_for: [primary-openstack-controller, openstack-controller]
+  requires: [openstack-haproxy, database, primary-rabbitmq, rabbitmq, primary-database]
+  refresh_on: [keystone_config]
+  cross-depends:
+    - name: /(primary-)?rabbitmq/
+    - name: keystone-db
+    - name: primary-keystone
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/keystone.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 3600
+  test_pre:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_pre.rb
+  test_post:
+    cmd: ruby /etc/puppet/modules/osnailyfacter/modular/keystone/keystone_post.rb
+
+- id: keystone-db
+  type: puppet
+  version: 2.0.0
+  groups: [primary-standalone-keystone]
+  required_for: [keystone, primary-keystone]
+  requires: [primary-database, database]
+  cross-depends:
+    - name: /(primary-)?database/
+      role: self
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/db.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 1800
+
+- id: workloads_collector_add
+  type: puppet
+  version: 2.0.0
+  groups: [primary-standalone-keystone]
+  required_for: [deploy_end]
+  requires: [keystone, primary-keystone]
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/workloads_collector_add.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 1800
+
+- id: disable_keystone_service_token
+  type: puppet
+  version: 2.0.0
+  groups: [primary-standalone-keystone, standalone-keystone]
+  requires: [post_deployment_start]
   required_for: [post_deployment_end]
   parameters:
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/astute/service_token_off.pp
@@ -126,40 +172,3 @@
     puppet_manifest: 'keystone-controller.pp'
     puppet_modules: '/etc/puppet/modules'
     timeout: 600
-
-#Disable keystone base tasks on controllers
-- id: primary-keystone
-  type: skipped
-
-- id: keystone
-  version: 2.0.0
-  type: skipped
-
-- id: keystone-db
-  version: 2.0.0
-  type: skipped
-
-- id: openstack-haproxy-keystone
-  version: 2.0.0
-  type: skipped
-
-- id: workloads_collector_add
-  version: 2.0.0
-  type: skipped
-
-- id: disable_keystone_service_token
-  version: 2.0.0
-  type: skipped
-
-- id: keystone-hiera-override
-  version: 2.0.0
-  type: puppet
-  groups: [primary-controller, controller, primary-standalone-keystone,
-    standalone-keystone, cinder, cinder-vmware, compute, ceph-osd,
-    primary-mongo, mongo]
-  requires: [globals]
-  required_for: [logging, keystone-controller]
-  parameters:
-    puppet_manifest: 'hiera-override.pp'
-    puppet_modules: '/etc/puppet/modules'
-    timeout: 120
