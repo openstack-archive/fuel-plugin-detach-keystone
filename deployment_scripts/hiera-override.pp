@@ -30,18 +30,6 @@ if $detach_keystone_plugin {
                               $network_metadata['vips']['public_service_endpoint']['ipaddr'])
 
   $nodes_hash          = hiera('nodes')
-
-  if hiera('role', 'none') == 'primary-standalone-keystone' {
-    $primary_keystone = 'true'
-  } else {
-    $primary_keystone = 'false'
-  }
-
-  if hiera('role', 'none') =~ /^primary/ {
-    $primary_controller = 'true'
-  } else {
-    $primary_controller = 'false'
-  }
   $keystone_roles       =  ['primary-standalone-keystone',
     'standalone-keystone']
   $keystone_nodes       = get_nodes_hash_by_roles($network_metadata,
@@ -50,7 +38,22 @@ if $detach_keystone_plugin {
   $keystone_nodes_ips   = ipsort(values($keystone_address_map))
   $keystone_nodes_names = keys($keystone_address_map)
 
-  case hiera('role', 'none') {
+  $roles = join(hiera('roles'), ',')
+  case $roles {
+    /primary-standalone-keystone/: {
+      $primary_keystone = true
+      $primary_controller = true
+    }
+    /^primary/: {
+      $primary_keystone = false
+      $primary_controller = true
+    }
+    default: {
+      $primary_database = false
+      $primary_controller = false
+    }
+  }
+  case $roles {
     /keystone/: {
       $corosync_roles      = $keystone_roles
       $corosync_nodes      = $keystone_nodes
@@ -60,18 +63,6 @@ if $detach_keystone_plugin {
       $memcached_addresses = ipsort(values(get_node_to_ipaddr_map_by_network_role($keystone_nodes,'mgmt/memcache')))
       $deploy_vrouter      = 'false'
       $keystone_enabled    = 'true'
-
-      #FIXME(mattymo): Allow plugins to depend on each other and update each other
-      $detach_rabbitmq_plugin = hiera('detach-rabbitmq', undef)
-      if $detach_rabbitmq_plugin {
-        $rabbitmq_roles = [ 'standalone-rabbitmq' ]
-        $amqp_port = hiera('amqp_ports', '5673')
-        $rabbit_nodes = get_nodes_hash_by_roles($network_metadata, $rabbitmq_roles)
-        $rabbit_address_map = get_node_to_ipaddr_map_by_network_role($rabbit_nodes, 'mgmt/messaging')
-        $amqp_ips = ipsort(values($rabbit_address_map))
-        $amqp_hosts = amqp_hosts($amqp_ips, $amqp_port)
-      }
-
     }
     /controller/: {
       $deploy_vrouter   = 'true'
@@ -88,11 +79,6 @@ service_endpoint: <%= @keystone_vip %>
 public_service_endpoint: <%= @public_keystone_vip %>
 keystone_vip: <%= @keystone_vip %>
 public_keystone_vip: <%= @public_keystone_vip %>
-<% if @keystone_nodes -%>
-<% require "yaml" -%>
-keystone_nodes:
-<%= YAML.dump(@keystone_nodes).sub(/--- *$/,"") %>
-<% end -%>
 keystone:
   enabled: <%= @keystone_enabled %>
 keystone_ipaddresses:
@@ -110,11 +96,6 @@ keystone_names:
 <% end -%>
 <% end -%>
 primary_controller: <%= @primary_controller %>
-<% if @corosync_nodes -%>
-<% require "yaml" -%>
-corosync_nodes:
-<%= YAML.dump(@corosync_nodes).sub(/--- *$/,"") %>
-<% end -%>
 <% if @corosync_roles -%>
 corosync_roles:
 <%
@@ -124,11 +105,6 @@ corosync_roles:
 <% end -%>
 <% if @colocate_haproxy -%>
 colocate_haproxy: <%= @colocate_haproxy %>
-<% end -%>
-<% if @memcache_nodes -%>
-<% require "yaml" -%>
-memcache_nodes:
-<%= YAML.dump(@memcache_nodes).sub(/--- *$/,"") %>
 <% end -%>
 <% if @memcache_roles -%>
 memcache_roles:
@@ -145,19 +121,11 @@ memcached_addresses:
 <% end -%>
 <% end -%>
 deploy_vrouter: <%= @deploy_vrouter %>
-<% if @amqp_hosts -%>
-amqp_hosts: <%=  @amqp_hosts %>
-<% end -%>
 ')
-
-  file { '/etc/hiera/override':
-    ensure  => directory,
-  }
 
   file { "${hiera_dir}/${plugin_yaml}":
     ensure  => file,
     content => "${detach_keystone_plugin['yaml_additional_config']}\n${calculated_content}\n",
-    require => File['/etc/hiera/override'],
   }
 
   package { 'ruby-deep-merge':

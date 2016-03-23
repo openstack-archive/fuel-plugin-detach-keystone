@@ -25,11 +25,11 @@ $public_address  = get_ssl_property($ssl_hash, $public_ssl_hash, 'keystone', 'pu
 $public_port     = '5000'
 
 $internal_protocol = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'protocol', 'http')
-$internal_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'hostname', [$management_vip])
+$internal_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'hostname', [$service_endpoint])
 $internal_port     = '5000'
 
 $admin_protocol = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'protocol', 'http')
-$admin_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'hostname', [$management_vip])
+$admin_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'admin', 'hostname', [$service_endpoint])
 $admin_port     = '35357'
 
 $public_url   = "${public_protocol}://${public_address}:${public_port}"
