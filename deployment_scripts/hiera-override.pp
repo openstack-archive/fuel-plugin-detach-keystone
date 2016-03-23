@@ -30,18 +30,6 @@ if $detach_keystone_plugin {
                               $network_metadata['vips']['public_service_endpoint']['ipaddr'])
 
   $nodes_hash          = hiera('nodes')
-
-  if hiera('role', 'none') == 'primary-standalone-keystone' {
-    $primary_keystone = 'true'
-  } else {
-    $primary_keystone = 'false'
-  }
-
-  if hiera('role', 'none') =~ /^primary/ {
-    $primary_controller = 'true'
-  } else {
-    $primary_controller = 'false'
-  }
   $keystone_roles       =  ['primary-standalone-keystone',
     'standalone-keystone']
   $keystone_nodes       = get_nodes_hash_by_roles($network_metadata,
@@ -50,7 +38,22 @@ if $detach_keystone_plugin {
   $keystone_nodes_ips   = ipsort(values($keystone_address_map))
   $keystone_nodes_names = keys($keystone_address_map)
 
-  case hiera('role', 'none') {
+  $roles = join(hiera('roles'), ',')
+  case $roles {
+    /primary-standalone-keystone/: {
+      $primary_keystone = true
+      $primary_controller = true
+    }
+    /^primary/: {
+      $primary_keystone = false
+      $primary_controller = true
+    }
+    default: {
+      $primary_database = false
+      $primary_controller = false
+    }
+  }
+  case $roles {
     /keystone/: {
       $corosync_roles      = $keystone_roles
       $corosync_nodes      = $keystone_nodes
@@ -71,7 +74,6 @@ if $detach_keystone_plugin {
         $amqp_ips = ipsort(values($rabbit_address_map))
         $amqp_hosts = amqp_hosts($amqp_ips, $amqp_port)
       }
-
     }
     /controller/: {
       $deploy_vrouter   = 'true'
