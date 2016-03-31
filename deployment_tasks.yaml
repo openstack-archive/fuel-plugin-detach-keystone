@@ -176,7 +176,7 @@
   required_for: [ceilometer-keystone, neutron-keystone, nova-keystone,
    ironic-keystone, swift-keystone, heat-keystone, aodh-keystone,
    glance-keystone, sahara-keystone, murano-keystone, murano-cfapi-keystone,
-   cinder-keystone]
+   cinder-keystone, radosgw-keystone]
   cross-depends:
     - name: /(primary-)?keystone/
       role: ["/(primary-)?standalone-keystone/"]
