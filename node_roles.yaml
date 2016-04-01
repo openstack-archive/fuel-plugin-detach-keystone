@@ -12,5 +12,7 @@ standalone-keystone:
   update_required:
     - standalone-keystone
   restrictions:
+    - condition: "settings:additional_components.ceilometer.value == true"
+      message: "Detach Keystone plugin does not support deployment with ceilometer."
     - condition: "settings:detach-database.metadata.enabled == false"
       message: "Detach Database plugin should be installed and enabled."
