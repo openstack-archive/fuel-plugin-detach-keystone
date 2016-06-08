@@ -174,9 +174,9 @@
   requires: [deploy_start, primary-cluster-haproxy, cluster-haproxy]
   # TODO(mattymo): Use cross-depended-by when it works
   required_for: [ceilometer-keystone, neutron-keystone, nova-keystone,
-   ironic-keystone, swift-keystone, heat-keystone, aodh-keystone,
-   glance-keystone, sahara-keystone, murano-keystone, murano-cfapi-keystone,
-   cinder-keystone, radosgw-keystone]
+   ironic-keystone, swift-keystone, heat-keystone, heat-cfn-keystone,
+   aodh-keystone, glance-keystone, sahara-keystone, murano-keystone,
+   murano-cfapi-keystone, cinder-keystone, radosgw-keystone]
   cross-depends:
     - name: /(primary-)?keystone/
       role: ["/(primary-)?standalone-keystone/"]
