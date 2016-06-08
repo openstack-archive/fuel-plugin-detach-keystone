@@ -134,6 +134,6 @@ deploy_vrouter: <%= @deploy_vrouter %>
 
   #FIXME(mattymo): https://bugs.launchpad.net/fuel/+bug/1479317
   package { 'python-openstackclient':
-    ensure => latest,
+    ensure => 'installed',
   }
 }
