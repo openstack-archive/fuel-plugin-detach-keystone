@@ -1,11 +1,9 @@
+fuel plugins]# cat detach-keystone-1.0/deployment_tasks.yaml 
 # Custom roles definition
 - id: primary-standalone-keystone
   type: group
   role: [primary-standalone-keystone]
-  requires: [deploy_start, primary-database, database, 
-    primary-rabbitmq, rabbitmq]
-  required_for: [deploy_end]
-  tasks: [hiera, fuel_pkgs, globals, tools, logging,
+  tasks: [pre_hiera_config, hiera, fuel_pkgs, globals, tools, logging,
     netconfig, hosts, firewall, keystone-firewall, ssl-keys-saving,
     ssl-add-trust-chain, deploy_start, primary-cluster, keystone-vip,
     primary-cluster-haproxy, openstack-haproxy-stats,
@@ -17,9 +15,7 @@
 - id: standalone-keystone
   type: group
   role: [standalone-keystone]
-  requires: [deploy_start, primary-database, database, primary-rabbitmq, rabbitmq]
-  required_for: [deploy_end]
-  tasks: [hiera, fuel_pkgs, globals, tools, logging,
+  tasks: [pre_hiera_config, hiera, fuel_pkgs, globals, tools, logging,
     netconfig, hosts, firewall, keystone-firewall, ssl-keys-saving,
     ssl-add-trust-chain, deploy_start, cluster, keystone-vip, cluster-haproxy,
     openstack-haproxy-stats, memcached, apache, keystone]
@@ -32,8 +28,8 @@
   version: 2.0.0
   type: puppet
   role: ['/.*/']
-  requires: [globals]
-  required_for: [logging, keystone-controller]
+  requires: [pre_hiera_config]
+  required_for: [pre_deployment_end]
   parameters:
     puppet_manifest: 'hiera-override.pp'
     puppet_modules: '/etc/puppet/modules'
