@@ -137,8 +137,7 @@
   required_for: [keystone, primary-keystone]
   requires: [hosts]
   cross-depends:
-    - name: /(primary-)?database/
-      role: primary-controller
+    - name: /^(primary-)?database$/
   parameters:
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/keystone/db.pp
     puppet_modules: /etc/puppet/modules
