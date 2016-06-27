@@ -1,0 +1,9 @@
+Code-Review+2: Matthew Mosesohn <mmosesohn@mirantis.com>
+Code-Review+1: Maksim Malchuk <mmalchuk@mirantis.com>
+Workflow+1: Matthew Mosesohn <mmosesohn@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 27 Jun 2016 14:40:21 +0000
+Reviewed-on: https://review.openstack.org/332969
+Project: openstack/fuel-plugin-detach-keystone
+Branch: refs/heads/master
