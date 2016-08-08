@@ -58,7 +58,6 @@ if $detach_keystone_plugin {
       $corosync_nodes      = $keystone_nodes
       $memcache_roles      = $keystone_roles
       $memcache_nodes      = $keystone_nodes
-      $memcached_addresses = $memcached_addresses
       $deploy_vrouter      = 'false'
       $keystone_enabled    = 'true'
 
